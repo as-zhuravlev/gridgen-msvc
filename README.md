@@ -1,3 +1,5 @@
+This is ugly msvc gridgen port.
+
 ## gridgen ##
 
 **gridgen** is a C code that provides a command line utility for non-interactive generation of multi-corner 
