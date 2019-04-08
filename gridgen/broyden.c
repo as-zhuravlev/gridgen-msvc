@@ -36,7 +36,7 @@
  */
 void broyden_update(func F, int n, double* x, double* f, double* W, void* custom)
 {
-    double* fnew = calloc(n * 4, sizeof(double));
+    double* fnew = static_cast<double *>(calloc(n * 4, sizeof(double)));
     double* s = &fnew[n];
     double* stw = &fnew[n * 2];
     double* wf1 = &fnew[n * 3];

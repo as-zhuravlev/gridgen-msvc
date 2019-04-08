@@ -38,7 +38,7 @@ struct vertnode {
     vertnode* prev;
     vertnode* next;
     point p;
-    int protected;
+    int _protected;
 };
 
 typedef struct {

@@ -84,7 +84,7 @@ static void quit(char* format, ...)
  * of the given polynomial's weight function w(x). Since the polynomials are
  * ortho-normalized, the tridiagonal matrix is guaranteed to be symmetric.
  */
-static double class(int n, double alpha, double beta, double* b, double* a)
+static double _class(int n, double alpha, double beta, double* b, double* a)
 {
     int nm1 = n - 1;
     double ab = alpha + beta;
@@ -253,7 +253,7 @@ static void imtql2(int n, double* d, double* e, double* z)
  */
 static void gaussj(int n, double alpha, double beta, double* b, double* t, double* w)
 {
-    double mu0 = class(n, alpha, beta, b, t);
+    double mu0 = _class(n, alpha, beta, b, t);
     int i;
 
     w[0] = 1.0;
@@ -278,14 +278,14 @@ swcr* sc_create(int n, int nq, double betas[])
     if (nq <= 0)
         return NULL;
 
-    sc = malloc(sizeof(swcr));
+    sc = static_cast<swcr *>(malloc(sizeof(swcr)));
 
     sc->n = n;
     sc->nq = nq;
     sc->betas = betas;
-    sc->nodes = malloc((n + 1) * nq * sizeof(double));
-    sc->weights = calloc((n + 1) * nq, sizeof(double));
-    sc->work = malloc(nq * sizeof(double));
+    sc->nodes = static_cast<double *>(malloc((n + 1) * nq * sizeof(double)));
+    sc->weights = static_cast<double *>(calloc((n + 1) * nq, sizeof(double)));
+    sc->work = static_cast<double *>(malloc(nq * sizeof(double)));
     sc->singular = 0;
 
     for (i = 0; i < n; ++i) {

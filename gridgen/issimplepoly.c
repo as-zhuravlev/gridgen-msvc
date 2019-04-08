@@ -80,7 +80,7 @@ typedef struct {
 
 static endpointqueue* eq_create(int n, double x[], double y[])
 {
-    endpointqueue* eq = malloc(sizeof(endpointqueue));
+    endpointqueue* eq = static_cast<endpointqueue *>(malloc(sizeof(endpointqueue)));
     int nsegs = n;
     int i;
 
@@ -90,7 +90,7 @@ static endpointqueue* eq_create(int n, double x[], double y[])
     eq->n = 2 * nsegs;          /* two vertex endpoints for each edge */
     eq->next = 0;
 
-    eq->data = malloc(eq->n * sizeof(endpoint));
+    eq->data = static_cast<endpoint *>(malloc(eq->n * sizeof(endpoint)));
     for (i = 0; i < nsegs; ++i) {
         endpoint* e1 = &eq->data[i * 2];
         endpoint* e2 = &eq->data[i * 2 + 1];
@@ -111,7 +111,7 @@ static endpointqueue* eq_create(int n, double x[], double y[])
         }
     }
 
-    eq->sorted = malloc(eq->n * sizeof(endpoint*));
+    eq->sorted = static_cast<endpoint **>(malloc(eq->n * sizeof(endpoint*)));
     for (i = 0; i < eq->n; ++i)
         eq->sorted[i] = &eq->data[i];
 
@@ -169,7 +169,7 @@ static slseg* slseg_create(sweepline* sl, endpoint* e)
     int n = sl->n;
     double* x = sl->x;
     double* y = sl->y;
-    slseg* s = malloc(sizeof(slseg));
+    slseg* s = static_cast<slseg *>(malloc(sizeof(slseg)));
     int i = e->eid;
     int i1 = (e->eid + 1) % n;
 
@@ -198,7 +198,7 @@ static void slseg_destroy(slseg* s)
 
 static sweepline* sl_create(int n, double x[], double y[])
 {
-    sweepline* sl = malloc(sizeof(sweepline));
+    sweepline* sl = static_cast<sweepline *>(malloc(sizeof(sweepline)));
 
     sl->n = n;
     sl->x = x;
@@ -272,7 +272,7 @@ static slseg* sl_add(sweepline* sl, endpoint* e, slseg** above, slseg** below)
 {
     segnode* sn = sl->firstnode;
     segnode* last = NULL;
-    segnode* new = NULL;
+    segnode* _new = NULL;
     slseg* s = slseg_create(sl, e);
 
     sl->pos = *e->x;
@@ -294,13 +294,13 @@ static slseg* sl_add(sweepline* sl, endpoint* e, slseg** above, slseg** below)
         sn = sn->next;
     }
 
-    new = malloc(sizeof(segnode));
-    new->s = s;
-    new->next = NULL;
+    _new = static_cast<segnode *>(malloc(sizeof(segnode)));
+    _new->s = s;
+    _new->next = NULL;
     if (sl->firstnode == NULL)
-        sl->firstnode = new;
+        sl->firstnode = _new;
     if (last != NULL)
-        last->next = new;
+        last->next = _new;
 
     return s;
 }

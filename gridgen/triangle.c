@@ -1,3 +1,4 @@
+#define TRILIBRARY
 /*****************************************************************************/
 /*                                                                           */
 /*      888888888        ,o,                          / 888                  */
@@ -341,6 +342,8 @@
 
 #define ONETHIRD 0.333333333333333333333333333333333333333333333333333333333333
 
+#define NO_TIMER
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -361,8 +364,8 @@
 /* A few forward declarations.                                               */
 
 #ifndef TRILIBRARY
-char *readline();
-char *findfield();
+char *readline(char *string, FILE *infile, char *infilename);
+char *findfield(char *string);
 #endif /* not TRILIBRARY */
 
 /* Labels that signify whether a record consists primarily of pointers or of */
@@ -1414,7 +1417,7 @@ int size;
 {
   VOID *memptr;
 
-  memptr = malloc(size);
+  memptr = (int *)malloc(size);
   if (memptr == (VOID *) NULL) {
     fprintf(stderr, "Error:  Out of memory.\n");
     exit(1);

@@ -26,12 +26,12 @@ static void istack_init(istack* s)
 {
     s->n = 0;
     s->nallocated = STACK_NSTART;
-    s->v = malloc(STACK_NSTART * sizeof(int));
+    s->v = static_cast<int *>(malloc(STACK_NSTART * sizeof(int)));
 }
 
 istack* istack_create(void)
 {
-    istack* s = malloc(sizeof(istack));
+    istack* s = static_cast<istack *>(malloc(sizeof(istack)));
 
     istack_init(s);
     return s;
@@ -56,7 +56,7 @@ void istack_push(istack* s, int v)
 {
     if (s->n == s->nallocated) {
         s->nallocated += STACK_NINC;
-        s->v = realloc(s->v, s->nallocated * sizeof(int));
+        s->v = static_cast<int *>(realloc(s->v, s->nallocated * sizeof(int)));
     }
 
     s->v[s->n] = v;

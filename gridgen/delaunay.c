@@ -99,7 +99,7 @@ static void tio_destroy(struct triangulateio* tio)
  */
 delaunay* delaunay_build(int np, point points[], int ns, int segments[], int nh, double holes[])
 {
-    delaunay* d = malloc(sizeof(delaunay));
+    delaunay* d = static_cast<delaunay *>(malloc(sizeof(delaunay)));
     struct triangulateio tio_in;
     struct triangulateio tio_out;
     char cmd[64] = "eznC";
@@ -114,7 +114,7 @@ delaunay* delaunay_build(int np, point points[], int ns, int segments[], int nh,
         return NULL;
     }
 
-    tio_in.pointlist = malloc(np * 2 * sizeof(double));
+    tio_in.pointlist = static_cast<double *>(malloc(np * 2 * sizeof(double)));
     tio_in.numberofpoints = np;
     for (i = 0, j = 0; i < np; ++i) {
         tio_in.pointlist[j++] = points[i].x;
@@ -122,13 +122,13 @@ delaunay* delaunay_build(int np, point points[], int ns, int segments[], int nh,
     }
 
     if (ns > 0) {
-        tio_in.segmentlist = malloc(ns * 2 * sizeof(int));
+        tio_in.segmentlist = static_cast<int *>(malloc(ns * 2 * sizeof(int)));
         tio_in.numberofsegments = ns;
         memcpy(tio_in.segmentlist, segments, ns * 2 * sizeof(int));
     }
 
     if (nh > 0) {
-        tio_in.holelist = malloc(nh * 2 * sizeof(double));
+        tio_in.holelist = static_cast<double *>(malloc(nh * 2 * sizeof(double)));
         tio_in.numberofholes = nh;
         memcpy(tio_in.holelist, holes, nh * 2 * sizeof(double));
     }
@@ -163,7 +163,7 @@ delaunay* delaunay_build(int np, point points[], int ns, int segments[], int nh,
     assert(tio_out.pointlist[2 * np - 2] == points[np - 1].x && tio_out.pointlist[2 * np - 1] == points[np - 1].y);
 
     d->npoints = np;
-    d->points = malloc(np * sizeof(point));
+    d->points = static_cast<point *>(malloc(np * sizeof(point)));
     for (i = 0, j = 0; i < np; ++i) {
         point* p = &d->points[i];
 
@@ -181,7 +181,7 @@ delaunay* delaunay_build(int np, point points[], int ns, int segments[], int nh,
     }
 
     d->ntriangles = tio_out.numberoftriangles;
-    d->triangles = malloc(d->ntriangles * sizeof(triangle));
+    d->triangles = static_cast<triangle *>(malloc(d->ntriangles * sizeof(triangle)));
 
     if (tr_verbose)
         fprintf(stderr, "triangles:\n");
@@ -197,17 +197,17 @@ delaunay* delaunay_build(int np, point points[], int ns, int segments[], int nh,
             fprintf(stderr, "  %d: (%d,%d,%d)\n", i, t->vids[0], t->vids[1], t->vids[2]);
     }
 
-    d->n_point_triangles = calloc(d->npoints, sizeof(int));
+    d->n_point_triangles = static_cast<int *>(calloc(d->npoints, sizeof(int)));
     for (i = 0; i < d->ntriangles; ++i) {
         triangle* t = &d->triangles[i];
 
         for (j = 0; j < 3; ++j)
             d->n_point_triangles[t->vids[j]]++;
     }
-    d->point_triangles = malloc(d->npoints * sizeof(int*));
+    d->point_triangles = static_cast<int **>(malloc(d->npoints * sizeof(int*)));
     for (i = 0; i < d->npoints; ++i) {
         if (d->n_point_triangles[i] > 0)
-            d->point_triangles[i] = malloc(d->n_point_triangles[i] * sizeof(int));
+            d->point_triangles[i] = static_cast<int *>(malloc(d->n_point_triangles[i] * sizeof(int)));
         else
             d->point_triangles[i] = NULL;
         d->n_point_triangles[i] = 0;
@@ -225,7 +225,7 @@ delaunay* delaunay_build(int np, point points[], int ns, int segments[], int nh,
 
     if (tio_out.edgelist != NULL) {
         d->nedges = tio_out.numberofedges;
-        d->edges = malloc(d->nedges * 2 * sizeof(int));
+        d->edges = static_cast<int *>(malloc(d->nedges * 2 * sizeof(int)));
         memcpy(d->edges, tio_out.edgelist, d->nedges * 2 * sizeof(int));
     } else {
         d->nedges = 0;

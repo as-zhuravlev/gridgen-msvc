@@ -205,7 +205,7 @@ int dopri8(fluxfn calc,         /* function computing the first derivatives */
     /*
      * work arrays 
      */
-    double* k = malloc(sizeof(double) * n * 8);
+    double* k = (double*)malloc(sizeof(double) * n * 8);
 
     double* k1 = k;
     double* k2 = &k[n];

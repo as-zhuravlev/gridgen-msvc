@@ -33,5 +33,4 @@ int on_left_side(zdouble* z, zdouble* z0, zdouble* z1, double eps);
 int in_triangle(zdouble* z, zdouble* z0, zdouble* z1, zdouble* z2, double eps);
 int in_quadrilateral(zdouble* z, zdouble zs[], int vids[], double eps);
 int in_poly(zdouble z, int n, zdouble zs[], double eps);
-
 #endif

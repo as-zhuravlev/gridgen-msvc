@@ -31,7 +31,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <float.h>
-#include <math.h>
+#define _USE_MATH_DEFINES
 #include <assert.h>
 #include <errno.h>
 #include "gridgen.h"
@@ -459,10 +459,10 @@ static int key_find(char* fname, FILE* fp, char* key)
         if (s == NULL)
             break;
 
-        while (isspace(s[0]))
+        while (isspace((unsigned char)s[0]))
             s++;
 
-        if (isspace(s[len]))
+        if (isspace((unsigned char)s[len]))
             s[len] = 0;
     } while (strcmp(key, s) != 0);
 
@@ -522,7 +522,7 @@ static int str2double(char* token, double* value)
 
 static gridgen* gridgen_init(void)
 {
-    gridgen* gg = malloc(sizeof(gridgen));
+    gridgen* gg = static_cast<gridgen*>(malloc(sizeof(gridgen)));
 
     gg->prmfname = NULL;
     gg->datafname = NULL;
@@ -632,7 +632,7 @@ static gridgen* gridgen_create(char* prmfname)
     FILE* data = NULL;
     int nold;
 
-    prm = gg_fopen(prmfname, "r");
+    prm = gg_fopen(prmfname, "rb");
     gg->prmfname = prmfname;
 
     gg->vertices = vertlist_create();
@@ -647,7 +647,7 @@ static gridgen* gridgen_create(char* prmfname)
         char* token = NULL;
         sgproj* proj = NULL;
 
-        gg->proj = calloc(1, sizeof(sgproj));
+        gg->proj = static_cast<sgproj *>(calloc(1, sizeof(sgproj)));
         proj = gg->proj;
         if ((token = strtok(buf, seps)) == NULL)
             quit("%s: <lon0> is not defined after \"geographic\"", prmfname);
@@ -1018,9 +1018,9 @@ static void get_rpoints(gridgen* gg)
         }
 
     gg->ncorners = count;
-    gg->rzs = malloc(sizeof(zdouble) * count);
-    gg->rvids = malloc(sizeof(int) * count);
-    gg->newrzs = malloc(sizeof(zdouble) * count);
+    gg->rzs = static_cast<zdouble *>(malloc(sizeof(zdouble) * count));
+    gg->rvids = static_cast<int *>(malloc(sizeof(int) * count));
+    gg->newrzs = static_cast<zdouble *>(malloc(sizeof(zdouble) * count));
 
     /*
      * some extra vertices may be inserted, so we will get `rvids' later 
@@ -1048,7 +1048,7 @@ static void get_rpoints(gridgen* gg)
 static double* calculate_betas(vertlist* l)
 {
     int n = l->n;
-    double* betas = malloc(n * sizeof(double));
+    double* betas = static_cast<double *>(malloc(n * sizeof(double)));
     vertnode* now = l->first;
     int i;
 
@@ -1093,7 +1093,7 @@ static double* calculate_betas(vertlist* l)
 
 static quadrilateral* set_quadrilaterals(delaunay* d)
 {
-    quadrilateral* out = malloc((d->npoints - 3) * sizeof(quadrilateral));
+    quadrilateral* out = static_cast<quadrilateral *>(malloc((d->npoints - 3) * sizeof(quadrilateral)));
     istack* diags = istack_create();
     istack* neighbours = istack_create();
     int* edges = d->edges;
@@ -1193,7 +1193,7 @@ static quadrilateral* set_quadrilaterals(delaunay* d)
         }
 
         q->nneighbours = neighbours->n;
-        q->neighbours = malloc(q->nneighbours * sizeof(int));
+        q->neighbours = static_cast<int *>(malloc(q->nneighbours * sizeof(int)));
         memcpy(q->neighbours, neighbours->v, q->nneighbours * sizeof(int));
     }
 
@@ -1216,7 +1216,7 @@ static quadrilateral* set_quadrilaterals(delaunay* d)
 
 static double* calculate_cis(int nquads, quadrilateral* quads, delaunay* d)
 {
-    double* cis = malloc(nquads * sizeof(double));
+    double* cis = static_cast<double *>(malloc(nquads * sizeof(double)));
     point* points = d->points;
     int i;
 
@@ -1300,7 +1300,7 @@ static void process_quadri(quadrilateral qs[], int qindex, int do_second_triangl
 static void calculate_fi(int nq, quadrilateral qs[], int qindex, double x[], zdouble w[])
 {
     int count = 0;
-    int* done = calloc(nq, sizeof(int));
+    int* done = static_cast<int *>(calloc(nq, sizeof(int)));
 
     /*
      * startup 
@@ -1384,8 +1384,8 @@ static void F(double x[], double f[], void* p)
 static void find_sigmas(gridgen* gg, func F)
 {
     int n = gg->nquadrilaterals;
-    double* x = malloc(n * sizeof(double));
-    double* f = malloc(n * sizeof(double));
+    double* x = static_cast<double *>(malloc(n * sizeof(double)));
+    double* f = static_cast<double *>(malloc(n * sizeof(double)));
     double* w = NULL;
     double error = DBL_MAX;
     double error_prev;
@@ -1402,20 +1402,20 @@ static void find_sigmas(gridgen* gg, func F)
     else if (gg->fsigma == NULL || (int) fread(x, sizeof(double), n, gg->fsigma) != n)
         memcpy(x, gg->cis, n * sizeof(double));
 
-    gg->ws = calloc(n * gg->vertices->n, sizeof(zdouble));
-    gg->As = calloc(gg->vertices->n, sizeof(zdouble));
-    gg->Bs = calloc(gg->vertices->n, sizeof(zdouble));
+    gg->ws = static_cast<zdouble *>(calloc(n * gg->vertices->n, sizeof(zdouble)));
+    gg->As = static_cast<zdouble *>(calloc(gg->vertices->n, sizeof(zdouble)));
+    gg->Bs = static_cast<zdouble *>(calloc(gg->vertices->n, sizeof(zdouble)));
 
     if (gg->newton == 1) {
         double* ww;
         int i;
 
-        w = calloc(n * n, sizeof(double));
+        w = static_cast<double *>(calloc(n * n, sizeof(double)));
 
         for (i = 0, ww = w; i < n; ++i, ww += n + 1)
             ww[0] = -1.0;
     } else if (gg->newton > 1)
-        w = calloc(n * M * 2, sizeof(double));
+        w = static_cast<double *>(calloc(n * M * 2, sizeof(double)));
 
     if (gg_verbose == 1)
         fprintf(stderr, "  ");
@@ -1635,7 +1635,7 @@ static void set_newbetas(gridgen* gg)
         fflush(stderr);
     }
 
-    gg->newbetas = calloc(gg->d->npoints, sizeof(double));
+    gg->newbetas = static_cast<double *>(calloc(gg->d->npoints, sizeof(double)));
 
     for (i = 0; i < n; ++i) {
         int index = gg->rvids[i];
@@ -1823,7 +1823,7 @@ static void calculate_newzs(gridgen* gg)
 {
     int nz = gg->nz;
     int nq = gg->nquadrilaterals;
-    int* done = calloc(nq, sizeof(int));
+    int* done = static_cast<int *>(calloc(nq, sizeof(int)));
     int count = 0;
     int vid0 = gg->rvids[0];
     int qid0;
@@ -1835,9 +1835,9 @@ static void calculate_newzs(gridgen* gg)
         fflush(stderr);
     }
 
-    gg->newzs = calloc(nz, sizeof(zdouble));
-    gg->newAs = malloc(nq * sizeof(zdouble));
-    gg->newBs = malloc(nq * sizeof(zdouble));
+    gg->newzs = static_cast<zdouble *>(calloc(nz, sizeof(zdouble)));
+    gg->newAs = static_cast<zdouble *>(malloc(nq * sizeof(zdouble)));
+    gg->newBs = static_cast<zdouble *>(malloc(nq * sizeof(zdouble)));
 
     qid0 = get_first_quadrilateral(gg);
     q0 = &gg->quadrilaterals[qid0];
@@ -1920,10 +1920,10 @@ static void calculate_newzs(gridgen* gg)
         *gg->nrect = gg->ncorners;
         if (*gg->xrect != NULL)
             free(*gg->xrect);
-        *gg->xrect = malloc(sizeof(double) * gg->ncorners);
+        *gg->xrect = static_cast<double *>(malloc(sizeof(double) * gg->ncorners));
         if (*gg->yrect != NULL)
             free(*gg->yrect);
-        *gg->yrect = malloc(sizeof(double) * gg->ncorners);
+        *gg->yrect = static_cast<double *>(malloc(sizeof(double) * gg->ncorners));
 
         for (i = 0; i < gg->ncorners; ++i) {
             (*gg->xrect)[i] = creal(gg->newrzs[i]);
@@ -2088,7 +2088,7 @@ static void map_quadrilaterals(gridgen* gg)
      * (there is 1-to-1 correspondence between inner edges of the
      * triangulation and the diagonals of the quadrilaterals) 
      */
-    zdouble* zm_all = malloc(nppe * nq * sizeof(zdouble));
+    zdouble* zm_all = static_cast<zdouble *>(malloc(nppe * nq * sizeof(zdouble)));
 
     int maxdiff = gg->nz - 1;
     double eps = gg->eps;
@@ -2118,7 +2118,7 @@ static void map_quadrilaterals(gridgen* gg)
         z1 = gg->zs[q->vids[2]];
 
         for (j = 0; j < nppe; ++j) {
-            zdouble z = (z0 * (nppe - j) + z1 * (j + 1)) / (nppe + 1);
+            zdouble z = (z0 * zdouble(nppe - j, 0) + z1 * zdouble(j + 1, 0)) / zdouble(nppe + 1, 0);
             int vid = (j < nppe / 2) ? q->vids[0] : q->vids[2];
             int status = 0;
 
@@ -2171,14 +2171,19 @@ static void map_quadrilaterals(gridgen* gg)
         /*
          * make sure that the edge generates a unique key
          */
-        assert(ht_insert(e2q, &key, q) == NULL);
+        if (ht_insert(e2q, &key, q) != NULL)
+        {
+            assert(0);
+            printf("error!gridgen.c2177\n");
+        }
+
     }
 
     /*
      * storing the found images
      */
-    gg->nqivertices = calloc(nq, sizeof(int));
-    gg->qivertices = malloc(nq * gg->nppq * sizeof(zdouble));
+    gg->nqivertices = static_cast<int*>(calloc(nq, sizeof(int)));
+    gg->qivertices = static_cast<zdouble*>(malloc(nq * gg->nppq * sizeof(zdouble)));
     for (i = 0; i < nq; ++i) {
         quadrilateral* q = &gg->quadrilaterals[i];
         zdouble* qivertices = &gg->qivertices[i * gg->nppq];
@@ -2212,7 +2217,7 @@ static void map_quadrilaterals(gridgen* gg)
                     key[0] = vid1;
                     key[1] = vid0;
                 }
-                q1 = ht_find(e2q, &key);
+                q1 = static_cast<quadrilateral*>(ht_find(e2q, &key));
                 assert(q1 != NULL);     /* found in the table */
                 qid = q1->id;
 
@@ -2268,7 +2273,7 @@ static void generate_grid(gridgen* gg)
             fprintf(gg->out, "## %d x %d\n", nx, ny);
 
         for (j = 0; j < ny; ++j) {
-            zdouble zy = z0 + I * dzy * j;
+            zdouble zy = z0 + I * zdouble(dzy * j, 0);
 
             for (i = 0; i < nx; ++i) {
                 zdouble z = zy + dzx * i;

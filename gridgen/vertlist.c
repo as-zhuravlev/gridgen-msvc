@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <limits.h>
 #include <float.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <string.h>
 #include "config.h"
@@ -38,7 +39,7 @@ void vertlist_init(vertlist* l)
 
 vertlist* vertlist_create()
 {
-    vertlist* l = malloc(sizeof(vertlist));
+    vertlist* l = static_cast<vertlist *>(malloc(sizeof(vertlist)));
 
     vertlist_init(l);
 
@@ -47,24 +48,24 @@ vertlist* vertlist_create()
 
 void vertlist_add(vertlist* l, point* p)
 {
-    vertnode* new = malloc(sizeof(vertnode));
+    vertnode* _new = static_cast<vertnode *>(malloc(sizeof(vertnode)));
 
-    new->p.x = p->x;
-    new->p.y = p->y;
-    new->p.z = p->z;
-    new->protected = 0;
+    _new->p.x = p->x;
+    _new->p.y = p->y;
+    _new->p.z = p->z;
+    _new->_protected = 0;
 
     if (l->n == 0) {
-        l->first = new;
-        new->prev = new;
+        l->first = _new;
+        _new->prev = _new;
     } else {
         vertnode* last = l->first->prev;
 
-        last->next = new;
-        l->first->prev = new;
-        new->prev = last;
+        last->next = _new;
+        l->first->prev = _new;
+        _new->prev = last;
     }
-    new->next = l->first;
+    _new->next = l->first;
     l->n++;
 }
 
@@ -102,16 +103,16 @@ void vertlist_delete(vertlist* l, vertnode* v)
 
 void vertlist_insert_after(vertlist* l, vertnode* v, point* p)
 {
-    vertnode* new = malloc(sizeof(vertnode));
+    vertnode* _new = static_cast<vertnode *>(malloc(sizeof(vertnode)));
 
-    new->p.x = p->x;
-    new->p.y = p->y;
-    new->p.z = p->z;
-    new->protected = 0;
-    new->prev = v;
-    new->next = v->next;
-    v->next = new;
-    new->next->prev = new;
+    _new->p.x = p->x;
+    _new->p.y = p->y;
+    _new->p.z = p->z;
+    _new->_protected = 0;
+    _new->prev = v;
+    _new->next = v->next;
+    v->next = _new;
+    _new->next->prev = _new;
     l->n++;
 }
 
@@ -260,7 +261,7 @@ point* vertlist_topoint(vertlist* l)
     if (n == 0)
         return NULL;
 
-    out = malloc(n * sizeof(point));
+    out = static_cast<point *>(malloc(n * sizeof(point)));
 
     for (i = 0; i < n; ++i) {
         point* pin = &now->p;
@@ -322,7 +323,7 @@ static zdouble p2z(point* p)
 zdouble* vertlist_tozdouble(vertlist* l)
 {
     int n = l->n;
-    zdouble* zs = malloc(n * sizeof(zdouble));
+    zdouble* zs = static_cast<zdouble *>(malloc(n * sizeof(zdouble)));
     vertnode* now = l->first;
     int i;
 
@@ -340,8 +341,8 @@ void vertlist_toxy(vertlist* l, double** x, double** y)
     vertnode* now = l->first;
     int i;
 
-    *x = malloc(n * 2 * sizeof(double));
-    *y = malloc(n * 2 * sizeof(double));
+    *x = static_cast<double*>(malloc(n * 2 * sizeof(double)));
+    *y = static_cast<double*>(malloc(n * 2 * sizeof(double)));
     for (i = 0; i < n; ++i) {
         point* p = &now->p;
 
@@ -430,7 +431,7 @@ void vertlist_process_phase1(vertlist* l)
 
             vertlist_insert_after(l, now, &pnew);
 
-            now->protected = 1;
+            now->_protected = 1;
             n++;
         }
         now = now->next;
@@ -447,7 +448,7 @@ delaunay* vertlist_triangulate(vertlist* l, FILE* log)
     delaunay* d;
     point* vertices = vertlist_topoint(l);
     int n = l->n;
-    int* edges = malloc(n * 2 * sizeof(int));
+    int* edges = static_cast<int*>(malloc(n * 2 * sizeof(int)));
     int i, j;
 
     if (gg_verbose && log != NULL) {
@@ -497,7 +498,7 @@ void vertlist_process_phase2(vertlist* l)
     times_called++;
 
     do {
-        if (!now->protected && !now->next->protected) {
+        if (!now->_protected && !now->next->_protected) {
             int i1 = (i + 1) % n;
             point* p = &now->p;
             point* p1 = &now->next->p;

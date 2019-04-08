@@ -51,7 +51,7 @@ struct hashtable {
  */
 hashtable* ht_create(int size, ht_keycp cp, ht_keyeq eq, ht_key2hash hash)
 {
-    hashtable* table = malloc(sizeof(hashtable));
+    hashtable* table = static_cast<hashtable *>(malloc(sizeof(hashtable)));
     ht_bucket** bucket;
     int i;
 
@@ -63,7 +63,7 @@ hashtable* ht_create(int size, ht_keycp cp, ht_keyeq eq, ht_key2hash hash)
     }
 
     table->size = size;
-    table->table = malloc(sizeof(ht_bucket*) * size);
+    table->table = static_cast<ht_bucket**>(malloc(sizeof(ht_bucket*) * size));
     assert(table->table != NULL);
     bucket = table->table;
 
@@ -132,7 +132,7 @@ void* ht_insert(hashtable* table, void* key, void* data)
      * pointing at it. 
      */
     if ((table->table)[val] == NULL) {
-        bucket = malloc(sizeof(ht_bucket));
+        bucket = static_cast<ht_bucket*>(malloc(sizeof(ht_bucket)));
         assert(bucket != NULL);
 
         bucket->key = table->cp(key);
@@ -310,7 +310,7 @@ void ht_process(hashtable* table, void (*func) (void*))
 
 static uint32_t strhash(void* key)
 {
-    char* str = key;
+    char* str = static_cast<char*>(key);
     uint32_t hashvalue = 0;
 
     while (*str != 0) {
@@ -324,26 +324,26 @@ static uint32_t strhash(void* key)
 
 static void* strcp(void* key)
 {
-    return strdup(key);
+    return strdup(static_cast<char*>(key));
 }
 
 static int streq(void* key1, void* key2)
 {
-    return !strcmp(key1, key2);
+    return !strcmp(static_cast<char*>(key1), static_cast<char*>(key2));
 }
 
 /* functions for for double keys */
 
 static uint32_t d1hash(void* key)
 {
-    uint32_t* v = key;
+    uint32_t* v = static_cast<uint32_t*>(key);
 
     return v[0] + v[1];
 }
 
 static void* d1cp(void* key)
 {
-    double* newkey = malloc(sizeof(double));
+    double* newkey = static_cast<double*>(malloc(sizeof(double)));
 
     *newkey = *(double*) key;
 
@@ -361,7 +361,7 @@ static int d1eq(void* key1, void* key2)
 
 static uint32_t d2hash(void* key)
 {
-    uint32_t* v = key;
+    uint32_t* v = static_cast<uint32_t*>(key);
 
     /*
      * PS: here multiplications suppose to make (a,b) and (b,a) generate
@@ -372,7 +372,7 @@ static uint32_t d2hash(void* key)
 
 static void* d2cp(void* key)
 {
-    double* newkey = malloc(sizeof(double) * 2);
+    double* newkey = static_cast<double*>(malloc(sizeof(double) * 2));
 
     newkey[0] = ((double*) key)[0];
     newkey[1] = ((double*) key)[1];
@@ -396,7 +396,7 @@ static uint32_t i1hash(void* key)
 
 static void* i1cp(void* key)
 {
-    uint32_t* newkey = malloc(sizeof(int));
+    uint32_t* newkey = static_cast<uint32_t*>(malloc(sizeof(int)));
 
     newkey[0] = ((uint32_t*) key)[0];
 
@@ -414,14 +414,14 @@ static int i1eq(void* key1, void* key2)
 
 static uint32_t i2hash(void* key)
 {
-    uint32_t* v = key;
+    uint32_t* v = static_cast<uint32_t*>(key);
 
     return v[0] + (v[1] << 16);
 }
 
 static void* i2cp(void* key)
 {
-    uint32_t* newkey = malloc(sizeof(uint32_t) * 2);
+    uint32_t* newkey = static_cast<uint32_t*>(malloc(sizeof(uint32_t) * 2));
 
     newkey[0] = ((uint32_t*) key)[0];
     newkey[1] = ((uint32_t*) key)[1];
@@ -440,15 +440,15 @@ static int i2eq(void* key1, void* key2)
 
 static uint32_t i1s2hash(void* key)
 {
-    uint32_t* vi = key;
-    uint16_t* vs = key;
+    uint32_t* vi = static_cast<uint32_t*>(key);
+    uint16_t* vs = static_cast<uint16_t*>(key);
 
     return vi[0] + ((uint32_t) vs[2] << 16) + ((uint32_t) vs[3] << 24);
 }
 
 static void* i1s2cp(void* key)
 {
-    uint32_t* newkey = malloc(sizeof(uint32_t) * 2);
+    uint32_t* newkey = static_cast<uint32_t*>(malloc(sizeof(uint32_t) * 2));
     uint16_t* s = (uint16_t*) newkey;
 
     newkey[0] = ((uint32_t*) key)[0];
@@ -469,14 +469,14 @@ static int i1s2eq(void* key1, void* key2)
 
 static uint32_t s4hash(void* key)
 {
-    uint16_t* v = key;
+    uint16_t* v = static_cast<uint16_t *>(key);
 
     return (uint32_t) v[0] + ((uint32_t) v[1] << 8) + ((uint32_t) v[2] << 16) + ((uint32_t) v[3] << 24);
 }
 
 static void* s4cp(void* key)
 {
-    uint16_t* newkey = malloc(sizeof(short) * 4);
+    uint16_t* newkey = static_cast<uint16_t*>(malloc(sizeof(short) * 4));
 
     newkey[0] = ((uint16_t*) key)[0];
     newkey[1] = ((uint16_t*) key)[1];
